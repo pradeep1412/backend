@@ -124,9 +124,11 @@ router.get("/products",async (req,res)=>{
     res.status(500).json({users:[]})
   }
 })
-router.get("/reviews",async (req,res)=>{
+router.get("/reviews/:id",async (req,res)=>{
   try {
-    const reviews = await Review.find({})
+    let path = req.path
+    path = path.slice(9)
+    const reviews = await Review.find({product_id:path})
     res.json({reviews})
   } catch (error) {
     console.log(error.message)

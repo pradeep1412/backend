@@ -4,7 +4,9 @@ import bcrypt, { hash } from "bcrypt"
 import Jwt from "jsonwebtoken";
 // import isAdmin from "../middlewares/isAdmin";
 import { body,validationResult } from "express-validator";
-
+import { v4 as uuidv4 } from 'uuid';
+import Product from "../services/mongodb/modules/product.js";
+import Review from "../services/mongodb/modules/review.js";
 
 const router = Express.Router()
 
@@ -35,7 +37,7 @@ const router = Express.Router()
 router.post("/signup",
 body('firstName').isLength({min:3}),
 body('email').isEmail(),
-body('password').isLength({min:6,max:10})
+body('password').isLength({min:5,max:10})
 ,async (req,res)=>{
   const {errors} = validationResult(req)
   if(errors.length > 0 ) return res.status(403).json({errors,message:"Bad request"})
@@ -83,6 +85,53 @@ router.post("/login",async (req,res)=>{
   }
 })
 
+router.post("/addproduct"
+,async (req,res)=>{
+  try {
 
+    const {Name,Price,Description,cDate,uDate} = req.body
+    const _id = uuidv4();
+    
+    const product = new Product({Name,Price,Description,cDate,uDate,_id})
+    await product.save()
+    res.send("request is send")
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({users:[]})
+  }
+})
+router.post("/addreview"
+,async (req,res)=>{
+  try {
+
+    const {userId,description,cDate,uDate,product_id} = req.body
+    const _id = uuidv4();
+    
+    const review = new Review({userId,description,cDate,uDate,_id,product_id})
+    await review.save()
+    res.send("request is send")
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({users:[]})
+  }
+})
+router.get("/products",async (req,res)=>{
+  try {
+    const products = await Product.find({})
+    res.json({products})
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({users:[]})
+  }
+})
+router.get("/reviews",async (req,res)=>{
+  try {
+    const reviews = await Review.find({})
+    res.json({reviews})
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({users:[]})
+  }
+})
 
 export default router
